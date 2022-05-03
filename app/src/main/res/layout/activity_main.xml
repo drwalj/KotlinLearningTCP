@@ -66,4 +66,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/PasswordBox" />
 
+    <TextView
+        android:id="@+id/recievedTextbox"
+        android:layout_width="307dp"
+        android:layout_height="126dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/TextBox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/PasswordBox" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

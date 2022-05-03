@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.w3c.dom.Text
 import java.io.OutputStream
 import java.lang.Exception
 import java.net.PasswordAuthentication
@@ -35,8 +36,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<ProgressBar>(R.id.LoaderSpinner).visibility = View.INVISIBLE;
 
         findViewById<TextView>(R.id.TextBox).text ="nice"
-        val addy = "192.168.0.87"
-        val port =
+        val addy = "192.168.44.44"
+        val port = 7755
         findViewById<Button>(R.id.daBtn).setOnClickListener {
             active = true;
 
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             var InputUsername: String = findViewById<EditText>(R.id.UsernameBox).text.toString();
 
             CoroutineScope(IO).launch {
-                client(addy,7755, InputPassword, InputUsername)
+                findViewById<TextView>(R.id.recievedTextbox).text = client(addy,port, InputPassword, InputUsername);
 
             }
             findViewById<EditText>(R.id.PasswordBox).setText("");
@@ -57,7 +58,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun client(address: String, port: Int, pass:String = "", user:String = ""){
+    private fun client(address: String, port: Int, pass:String = "", user:String = ""):String{
+        var recievedThings:String = "recieved:\n";
+
         if (pass != "" && user != ""){
             try {
 
@@ -88,12 +91,24 @@ class MainActivity : AppCompatActivity() {
                 writer.write(user.toByteArray().size);
                 writer.write(pass.toByteArray());
 
-                writer.close();
+
+
+                writer.flush();
+
+                val scanner = Scanner(connection.inputStream)
+                while (scanner.hasNextLine()) {
+                    recievedThings += scanner.nextLine();
+                    break
+                }
+                findViewById<TextView>(R.id.recievedTextbox).text = recievedThings;
+
                 connection.close();
             }
             catch (e: Exception){
 
             }
         }
+        return recievedThings;
+
     }
 }
