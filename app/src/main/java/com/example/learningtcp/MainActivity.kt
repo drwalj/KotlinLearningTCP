@@ -5,10 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.system.Os.socket
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -36,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<ProgressBar>(R.id.LoaderSpinner).visibility = View.INVISIBLE;
 
         findViewById<TextView>(R.id.TextBox).text ="nice"
-        val addy = "192.168.44.44"
+        val addy = "172.16.37.107"
         val port = 7755
         findViewById<Button>(R.id.daBtn).setOnClickListener {
             active = true;
@@ -45,10 +42,20 @@ class MainActivity : AppCompatActivity() {
             var InputPassword: String = findViewById<EditText>(R.id.PasswordBox).text.toString();
             var InputUsername: String = findViewById<EditText>(R.id.UsernameBox).text.toString();
 
-            CoroutineScope(IO).launch {
-                findViewById<TextView>(R.id.recievedTextbox).text = client(addy,port, InputPassword, InputUsername);
-
+            if (";" in InputPassword || ";" in InputUsername){ //checking if delegator is used in password/username and wether length is appropriate
+                Toast.makeText(this@MainActivity, "illegal character: ; ", Toast.LENGTH_LONG).show()
             }
+
+            else if (InputPassword.length > 30 || InputUsername.length > 30){
+                Toast.makeText(this@MainActivity, "input exceeded 30 characters", Toast.LENGTH_LONG).show()
+            }
+
+            else{
+                CoroutineScope(IO).launch {
+                    findViewById<TextView>(R.id.recievedTextbox).text = client(addy,port, InputPassword, InputUsername);
+                }
+            }
+
             findViewById<EditText>(R.id.PasswordBox).setText("");
             findViewById<EditText>(R.id.UsernameBox).setText("");
 
@@ -78,18 +85,16 @@ class MainActivity : AppCompatActivity() {
 
                 var ge: ByteArray  = pass.toByteArray()
                 var senedeneng:String = "";
-                for (i in ge){
-                    senedeneng+=i.toInt().toString();
+                for (d in ge){
+                    senedeneng+=d.toInt().toString();
                     senedeneng += " - ";
                 }
 
                 findViewById<TextView>(R.id.TextBox).text ="Data Sent: \n$sendung --- ${user.toByteArray().size}\n---\n$senedeneng --- ${pass.toByteArray().size}\n"
 
-                writer.write(user.toByteArray().size);
-                writer.write(user.toByteArray());
-
-                writer.write(user.toByteArray().size);
-                writer.write(pass.toByteArray());
+                writer.write(user.toByteArray()); //Username versenden
+                writer.write(";".toByteArray()); //delegator senden
+                writer.write(pass.toByteArray());// password senden
 
 
 
