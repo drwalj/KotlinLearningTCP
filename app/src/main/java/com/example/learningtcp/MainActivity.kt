@@ -1,5 +1,6 @@
 package com.example.learningtcp
 
+import android.icu.util.Output
 import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -25,6 +26,8 @@ class MainActivity : AppCompatActivity() {
 
     private var active: Boolean = false;
     private var data: String = ""
+    private val addy = "172.16.36.159"
+    private val port = 7755
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +36,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<ProgressBar>(R.id.LoaderSpinner).visibility = View.INVISIBLE;
 
         findViewById<TextView>(R.id.TextBox).text ="nice"
-        val addy = "172.16.37.107"
-        val port = 7755
+
         findViewById<Button>(R.id.daBtn).setOnClickListener {
             active = true;
 
@@ -51,8 +53,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             else{
-                CoroutineScope(IO).launch {
-                    findViewById<TextView>(R.id.recievedTextbox).text = client(addy,port, InputPassword, InputUsername);
+                CoroutineScope(IO).launch {  //async
+                    findViewById<TextView>(R.id.recievedTextbox).text = client(InputPassword, InputUsername);
                 }
             }
 
@@ -61,22 +63,52 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+    }
 
+    private fun SendToServer(message: String = ""):Boolean{ //HELPERMETHOD TO SEND
+        try{
+            val connection = Socket(addy,port);
+            val writer:OutputStream = connection.getOutputStream();
+
+            writer.write(message.toByteArray());
+            writer.flush();
+            return true; //RETURNS TRUE IF SUCCESSFULL
+        }
+        catch(e: Exception) {
+            return false;
+        }
+    }
+
+    private fun RecieveFromServer():String{
+        var recievedMessage:String = "";
+        try {
+            val connection = Socket(addy,port);
+            val scanner = Scanner(connection.inputStream)
+            while (scanner.hasNextLine()) {
+                recievedMessage += scanner.nextLine();
+            }
+
+            connection.close();
+            return recievedMessage;
+
+        }
+        catch(r:Exception){
+            return "error occured: ${r.message} ";
+        }
 
     }
 
-    private fun client(address: String, port: Int, pass:String = "", user:String = ""):String{
+    private fun client(pass:String = "", user:String = ""):String{
         var recievedThings:String = "recieved:\n";
-
         if (pass != "" && user != ""){
             try {
 
-                val connection = Socket(address, port);
+                val connection = Socket(addy, port);
 
                 val writer:OutputStream = connection.getOutputStream();
 
 
-                var e: ByteArray  = user.toByteArray()
+                var e: ByteArray  = user.toByteArray() //THIS IS FOR DEBUG
                 var sendung:String = "";
                 for (i in e){
                     sendung+=i.toInt().toString();
