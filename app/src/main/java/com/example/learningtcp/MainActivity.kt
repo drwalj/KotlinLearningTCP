@@ -67,12 +67,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun SendToServer(message: String = ""):Boolean{ //HELPERMETHOD TO SEND
         try{
-            val connection = Socket(addy,port);
-            val writer:OutputStream = connection.getOutputStream();
+            CoroutineScope(IO).launch {
+                val connection = Socket(addy,port);
+                val writer:OutputStream = connection.getOutputStream();
 
-            writer.write(message.toByteArray());
-            writer.flush();
+                writer.write(message.toByteArray());
+                writer.flush();
+            }
             return true; //RETURNS TRUE IF SUCCESSFULL
+
         }
         catch(e: Exception) {
             return false;
@@ -82,13 +85,15 @@ class MainActivity : AppCompatActivity() {
     private fun RecieveFromServer():String{
         var recievedMessage:String = "";
         try {
-            val connection = Socket(addy,port);
-            val scanner = Scanner(connection.inputStream)
-            while (scanner.hasNextLine()) {
+            CoroutineScope(IO).launch {
+                val connection = Socket(addy,port);
+                val scanner = Scanner(connection.inputStream)
+                while (scanner.hasNextLine()) {
                 recievedMessage += scanner.nextLine();
-            }
+                connection.close();
 
-            connection.close();
+                }
+            }
             return recievedMessage;
 
         }
